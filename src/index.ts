@@ -2,6 +2,7 @@ import { AtpAgent, AtpSessionEvent, AtpSessionData, RichText, AppBskyRichtextFac
 import { engine } from 'express-handlebars';
 import express, { Express } from 'express';
 import { Router, Request, Response } from "express";
+import { XRPCError } from "@atproto/xrpc";
 import path from 'path';
 import {fileURLToPath} from 'url';
 import { dirname } from 'path';
@@ -45,11 +46,16 @@ app.get("/", (req: Request, res: Response) => {
 app.post("/login", async (req: Request, res: Response) => {
     const { username, password } = req.body;
 
+
     try {
         await agent.login({
             identifier: username,
             password: password
         });
+        res.cookie('usernm', req.body.username);
+        res.cookie('pass', req.body.password);
+
+
         res.redirect("/home");
     } catch (error) {
         console.log(error);
@@ -62,14 +68,17 @@ app.post("/login", async (req: Request, res: Response) => {
 
 app.get("/home", express.urlencoded({ extended: true }), async (req, res) => {
 
-    const {data} = await agent.getTimeline({limit: 15});
-    const { feed: postsArray, cursor: nextPage } = data;
+    
+
     try {
+        const {data} = await agent.getTimeline({limit: 15});
+        const { feed: postsArray, cursor: nextPage } = data;
         res.render('home', {
             feed: postsArray,
             cursor: nextPage
         });
-     } catch (error) {
+     } catch (XRPCError) {
+        
         res.status(400).send("Oops, Authorization failed! (400)");
     }
 });

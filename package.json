@@ -12,6 +12,7 @@
   "description": "",
   "dependencies": {
     "@atproto/api": "^0.13.18",
+    "@atproto/xrpc": "^0.6.4",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.10.1",
     "@types/sharp": "^0.31.1",
