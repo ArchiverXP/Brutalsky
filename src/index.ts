@@ -160,9 +160,10 @@ app.post('/sendstatus', upload.single("embed"), express.urlencoded({extended: tr
             facets: rt.facets,
             createdAt: new Date().toISOString()
      })
+     res.send(`<meta http-equiv="Refresh" content="0; URL=/home" />`);
     
 
-    res.redirect("/home")
+    
 })
 
 
