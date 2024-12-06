@@ -173,22 +173,25 @@ app.post('/sendstatus', upload.single("embed"), express.urlencoded({extended: tr
     console.log(req.body);
     console.log(req.files);
     const rt = new RichText({
-        text: req.body.bodytext,
-      });
-
-
+      text: req.body.bodytext,
+    });
     await rt.detectFacets(agent);
-
-     await agent.post({
-          "$type": "app.bsky.feed.post",
-           text: rt.text,
-            facets: rt.facets,
-            createdAt: new Date().toISOString()
-     })
-     res.send(`<meta http-equiv="Refresh" content="0; URL=/home" />`);
     
-
-    
+    const {data} = await agent.uploadBlob(req.file?.buffer as any, {encoding:'image/png'});
+    await agent.post({
+      "$type": "app.bsky.feed.post",
+      text: rt.text,
+      embed: {
+        $type:'app.bsky.embed.images',
+        images:[{
+            image: data.blob,
+            alt: req.body.alt
+        }]
+      },
+      facets: rt.facets,
+      createdAt: new Date().toISOString()
+    })
+    res.redirect("/home")
 })
 
 
