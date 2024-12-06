@@ -1,6 +1,6 @@
 import { AtpAgent, AtpSessionEvent, AtpSessionData, RichText, AppBskyRichtextFacet, Agent } from '@atproto/api'
 import { engine } from 'express-handlebars';
-import express, { Express, request, response } from 'express';
+import express, { Express, NextFunction, request, response } from 'express';
 import { Router, Request, Response } from "express";
 
 import path from 'path';
@@ -77,7 +77,32 @@ app.get("/", async (req: Request, res: Response) => {
     
 });
 
+//for old web browsers: ie: dsi web browser
+app.post('/post', async(req: Request, res: Response, next: NextFunction) =>{
+    const { username, password } = req.body;
+    if(agent.session){
+        console.log("Already logged in! :D");
+    }
+    console.log("WOKE");
 
+    const sesh = req.cookies;
+
+    try {
+        
+        await agent.login({
+            identifier: username,
+            password: password
+        });
+
+        res.cookie("username", username);
+        res.cookie("password", password);
+
+        res.redirect("/home");
+    } catch (error) {
+        console.log(error);
+        res.status(400).send("Oops, Authorization failed! (400)");
+    }
+})
 
 
 app.post("/login", async (req: Request, res: Response) => {
