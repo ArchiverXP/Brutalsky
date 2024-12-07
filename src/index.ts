@@ -12,6 +12,7 @@ import { dirname } from 'path';
 import multer from 'multer'
 import sharp from 'sharp'
 import { readFile, writeFile } from 'node:fs/promises';
+import { Blob } from 'buffer';
 let savedSessionData: AtpSessionData;
 const port = 3020;
 const ip = "0.0.0.0";
@@ -39,6 +40,11 @@ export const agent = new AtpAgent({
 app.engine('hbs', engine({
     extname: ".hbs",
     defaultLayout: false,
+    helpers: {
+        inc: function (value, options){
+            return parseInt(value) + 1;
+        }
+    }
 }));
 
 
@@ -138,23 +144,50 @@ app.get("/home", express.urlencoded({ extended: true }), async (req, res) => {
 
     const {username, password} = req.cookies;
 
-
+    let val = 20;
     if(!username || !password){
         res.redirect('/');
     }
     try {
         const {data} = await agent.getTimeline({limit: 20});
-        const { feed: postsArray, cursor: nextPage } = data;
+        const { feed: postsArray, cursor: nextPage, limit: val } = data;
         res.render('home', {
             feed: postsArray,
-            cursor: nextPage
+            cursor: nextPage,
+            limit: val
         });
+
+
      } catch (XRPCError) {
     
         console.log(XRPCError);
     }
 });
 
+
+app.get('/page/:limit', async (req, res) => {
+    const {username, password} = req.cookies;
+
+
+    if(!username || !password){
+        res.redirect('/');
+    }
+    try {
+        const {data} = await agent.getTimeline({limit: 20});
+        const { feed: postsArray, cursor: nextPage, limit: val } = data;
+        console.log(data.feed);
+        res.render('home', {
+            feed: postsArray,
+            cursor: nextPage,
+            limit: req.params.limit,
+        });
+
+
+     } catch (XRPCError) {
+    
+        console.log(XRPCError);
+    }
+});
 
 app.post("/home", express.urlencoded({ extended: true }), async (req, res) => {
 
@@ -176,21 +209,17 @@ app.post('/sendstatus', upload.single("embed"), express.urlencoded({extended: tr
       text: req.body.bodytext,
     });
     await rt.detectFacets(agent);
+
     
-    const {data} = await agent.uploadBlob(req.file?.buffer as any, {encoding:'image/png'});
+    
     await agent.post({
       "$type": "app.bsky.feed.post",
       text: rt.text,
-      embed: {
-        $type:'app.bsky.embed.images',
-        images:[{
-            image: data.blob,
-            alt: req.body.alt
-        }]
-      },
       facets: rt.facets,
       createdAt: new Date().toISOString()
+      
     })
+    
     res.redirect("/home")
 })
 
