@@ -1,0 +1,34 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/>
+
+<p> Notifications: </p>
+
+{{#each notifs}}
+    <p> {{notifs}} </p>
+    {{#isEqual this.reason "like"}}
+        <p> {{this.author.handle}} liked your post! </p>
+    {{/isEqual}}
+
+    {{#isEqual this.reason "repost"}}
+        <p> {{this.author.handle}} reposted your post! </p>
+    {{/isEqual}}
+
+    {{#isEqual this.reason "reply"}}
+        <p> {{this.author.handle}} replied to your post! </p>
+        <p>{{this.author.handle}} said: {{this.record.text}} </p>
+    {{/isEqual}}
+
+    {{#isEqual this.reason "mention"}}
+        <p> {{this.author.handle}} mentioned you! </p>
+        <p> {{this.record.text}} </p>
+    {{/isEqual}}    
+
+    {{#isEqual this.reason "quote"}}
+        <p> {{this.author.handle}} quoted you! </p>
+        <p> {{this.record.text}} </p>
+    {{/isEqual}}
+
+    {{#isEqual this.reason "follow"}}
+        <p> {{this.author.handle}} is following you! </p>
+    {{/isEqual}}    
+    
+{{/each}}

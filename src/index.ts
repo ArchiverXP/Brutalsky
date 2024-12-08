@@ -42,8 +42,8 @@ app.engine('hbs', engine({
     extname: ".hbs",
     defaultLayout: false,
     helpers: {
-        inc: function (value, options){
-            return parseInt(value) + 1;
+        isEqual: function (value, value2, options){
+            return (value == value2) ? options.fn(this) : options.inverse(this);
         }
     }
 }));
@@ -163,10 +163,12 @@ app.get("/home", express.urlencoded({ extended: true }), async (req, res) => {
 
         const { feed: postsArray, cursor: nextPage, limit: val} = data;
 
-        
+        const NotifCount = await agent.countUnreadNotifications();
+
         console.log(data.cursor);
         res.render('home', {
             feed: postsArray,
+            notifcount: NotifCount.data.count,
             cursor: "",
             limit: val
         });
@@ -193,6 +195,16 @@ app.get('/profile/:user', async (req: Request, res: Response) => {
 })
 
 
+app.get('/notifications', async (req: Request, res: Response) => {
+
+    const {data} = await agent.listNotifications();
+    
+    const {notifications: postsArray2} = data;
+
+    res.render('notifs', {
+        notifs: postsArray2
+    })
+});
 
 
 
