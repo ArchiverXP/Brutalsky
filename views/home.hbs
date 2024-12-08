@@ -1,11 +1,11 @@
 <meta name='viewport' content='width=device-width, initial-scale=1'/>
 <head>
-    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="/main.css">
 </head>
 
 
 <div class="mobileheader"> 
-    <form action="/sendstatus" method="post" enctype="multipart/form-data">
+    <form action="/sendstatus" method="post">
         <label>How are you doing?</label>
         <input class="i" id="status" maxlength="300" name="bodytext" type="text" /><br />
         <button class="b" id="button"  name="mobile_text_content" type="submit"> Send </button>     
@@ -14,27 +14,60 @@
 
 
 
-
 <div class="feed">
     {{#each feed}}
-
-    {{#if this.post.reply}}
-        <p> Reply to {{this.post.reply.root.uri}}</p>
+    <br> </br>
+    {{#if this.reason}}
+    
+        <p> Reposted by: {{this.reason.by.handle}} </p>
+        
     {{/if}}
-    <img src="{{this.post.author.avatar}}" height="50px" width="50px"/>  <a href="/profile/{{this.post.author.handle}}">{{this.post.author.handle}}</a>
 
+    {{#if this.reply}}
+    
+         <p> Reply to: {{this.reply.parent.author.handle}} </p>
+        
+    {{/if}} 
+
+
+    <img src="{{this.post.author.avatar}}" height="50px" width="50px"/>
+    
+    <a href="/profile/{{this.post.author.handle}}">{{this.post.author.handle}}</a>
+    
 	<p> {{this.post.record.text}} </p>
 		{{#if this.post.embed}}
             {{#each this.post.embed.images}}
-              <div class="embed" style="width: 100px; height: 100px">
-                <img src="{{this.thumb}}"alt={{this.alt}} width="100%" height="100%">
+              <div class="embed" style="width: 150px; height: 150px">
+                <img src="{{this.thumb}}" alt="{{this.alt}}" width="100%" height="100%">
             </div>
   {{/each}}  {{/if}}
+  
+  <p> {{this.post.likeCount}} likes </p>
+  <p> {{this.post.replyCount}} replies </p>
+  <p> {{this.post.repostCount}} reposts </p>
+
+  {{#if this.post.uri}}
+    <form action="/like" method="post" name="uri">
+        <input name="uri" type="hidden" value="{{this.post.uri}}" />
+        <input name="cid" type="hidden" value="{{this.post.cid}}" /> 
+        <button type="submit"> Like </button>
+    </form>
+
+    <form action="/repost" method="post" name="uri"> 
+        <input name="uri2" type="hidden" value="{{this.post.uri}}" />
+        <input name="cid2" type="hidden" value="{{this.post.cid}}" />
+        <button type="submit"> Repost </button>
+    </form>
+  {{/if}}
+
+    
+    
+    {{#if @last}}
+        <form class="notthefirst" action="/page/{{this.post.indexedAt}}" method="get"> 
+        <button type="submit">Next Page</button>
+        </form>
+    {{/if}}
   
     {{/each}}
 
 </div>
-
-<form class="notthefirst" onclick="/page/limit=30" method="get"> 
-<button type="submit">Next Page</button>
-</form>

@@ -1,4 +1,4 @@
-import { AtpAgent, AtpSessionEvent, AtpSessionData, RichText, AppBskyRichtextFacet, Agent } from '@atproto/api'
+import { AtpAgent, AtpSessionEvent, AtpSessionData, RichText, AppBskyRichtextFacet, Agent, AppBskyFeedGetTimeline } from '@atproto/api'
 import { engine } from 'express-handlebars';
 import express, { Express, NextFunction, request, response } from 'express';
 import { Router, Request, Response } from "express";
@@ -9,8 +9,8 @@ import cookieParser from 'cookie-parser';
 import cookieSession from 'cookie-session'
 import {fileURLToPath} from 'url';
 import { dirname } from 'path';
-import multer from 'multer'
-import sharp from 'sharp'
+//import multer from 'multer'
+//import sharp from 'sharp'
 import { readFile, writeFile } from 'node:fs/promises';
 import { Blob } from 'buffer';
 let savedSessionData: AtpSessionData;
@@ -26,7 +26,8 @@ app.use(cookieParser());
 
 app.use(cookieSession({
     name: 'session',
-    keys: ['FUCK', "YOU"],
+    keys: ['FUN', "YOU"],
+    maxAge: 24 * 60 * 60 * 1000,
     secure: false
 }));
 
@@ -48,13 +49,11 @@ app.engine('hbs', engine({
 }));
 
 
-const storage = multer.memoryStorage()
-const upload = multer({ storage: storage })
+//const storage = multer.memoryStorage()
+//const upload = multer({ storage: storage })
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
-
-
 
 
 
@@ -82,6 +81,9 @@ app.get("/", async (req: Request, res: Response) => {
 
     
 });
+
+
+
 
 //for old web browsers: ie: dsi web browser
 app.post('/post', async(req: Request, res: Response, next: NextFunction) =>{
@@ -129,6 +131,7 @@ app.post("/login", async (req: Request, res: Response) => {
 
         res.cookie("username", username, { httpOnly: true });
         res.cookie("password", password, { httpOnly: true });
+        
 
         res.redirect("/home");
     } catch (error) {
@@ -137,6 +140,11 @@ app.post("/login", async (req: Request, res: Response) => {
     }
 })
 
+
+
+async function getThread(uri){
+    const {data} = await agent.getPostThread({uri: uri})
+}
 
 
 
@@ -149,14 +157,20 @@ app.get("/home", express.urlencoded({ extended: true }), async (req, res) => {
         res.redirect('/');
     }
     try {
-        const {data} = await agent.getTimeline({limit: 20});
-        const { feed: postsArray, cursor: nextPage, limit: val } = data;
+        
+
+        const {data} = await agent.getTimeline({limit: 20, cursor: ""});
+
+        const { feed: postsArray, cursor: nextPage, limit: val} = data;
+
+        
+        console.log(data.cursor);
         res.render('home', {
             feed: postsArray,
-            cursor: nextPage,
+            cursor: "",
             limit: val
         });
-
+        
 
      } catch (XRPCError) {
     
@@ -165,21 +179,42 @@ app.get("/home", express.urlencoded({ extended: true }), async (req, res) => {
 });
 
 
-app.get('/page/:limit', async (req, res) => {
-    const {username, password} = req.cookies;
 
+app.get('/profile/:user', async (req: Request, res: Response) => {
+        const user = req.params['user']
+        console.log(req.params)
+        const getProfile = await agent.getProfile({actor: user})
+        const {data} = await agent.getAuthorFeed({actor: user})
+        
+        res.render('profile', {
+            user: getProfile,
+            posts: data.feed
+        })
+})
+
+
+
+
+
+app.get('/page/:limit', async (req: Request, res: Response) => {
+    const {username, password} = req.cookies;
+    
+    console.log(req.params.limit)
+
+    
+    
 
     if(!username || !password){
         res.redirect('/');
     }
     try {
-        const {data} = await agent.getTimeline({limit: 20});
-        const { feed: postsArray, cursor: nextPage, limit: val } = data;
-        console.log(data.feed);
+        const {data} = await agent.getTimeline({limit: 20, cursor: req.params.limit.toString()});
+        const { feed: postsArray, cursor: nextPage} = data;
+
+        // debug: console.log(data.feed);
         res.render('home', {
             feed: postsArray,
             cursor: nextPage,
-            limit: req.params.limit,
         });
 
 
@@ -189,20 +224,11 @@ app.get('/page/:limit', async (req, res) => {
     }
 });
 
-app.post("/home", express.urlencoded({ extended: true }), async (req, res) => {
-
-    const {data} = await agent.getTimeline({limit: 15});
-
-    try {
-
-     } catch (error) {
-        res.status(400).send("Oops, Authorization failed! (400)");
-    }
-});
 
 let file2uh = "a";
 
-app.post('/sendstatus', upload.single("embed"), express.urlencoded({extended: true}), async (req, res) => {
+
+app.post('/sendstatus', express.urlencoded({extended: true}), async (req, res) => {
     console.log(req.body);
     console.log(req.files);
     const rt = new RichText({
@@ -220,8 +246,21 @@ app.post('/sendstatus', upload.single("embed"), express.urlencoded({extended: tr
       
     })
     
-    res.redirect("/home")
+    res.redirect('/home')
 })
+
+app.post('/like',  async (req: Request, res: Response) => {
+
+    await agent.like(req.body.uri, req.body.cid);
+
+    res.redirect('/home')
+});
+
+app.post('/repost',  async (req: Request, res: Response) => {
+    await agent.repost(req.body.uri2, req.body.cid2)
+
+    res.redirect('/home')   
+});
 
 
 
