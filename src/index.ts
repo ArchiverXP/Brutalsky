@@ -165,10 +165,12 @@ app.get("/home", express.urlencoded({ extended: true }), async (req, res) => {
 
         const NotifCount = await agent.countUnreadNotifications();
 
+        const notifs = NotifCount.data.count;
+
         console.log(data.cursor);
         res.render('home', {
             feed: postsArray,
-            notifcount: NotifCount.data.count,
+            notifcount: notifs,
             cursor: "",
             limit: val
         });
@@ -193,6 +195,42 @@ app.get('/profile/:user', async (req: Request, res: Response) => {
             posts: data.feed
         })
 })
+
+
+app.get('/profile/:user/:limit', async (req: Request, res: Response) => {
+    const {username, password} = req.cookies;
+    
+    console.log(req.params.limit)
+
+    
+    const user = req.params['user']
+    console.log(req.params)
+
+    
+
+
+    if(!username || !password){
+        res.redirect('/');
+    }
+    try {
+        const {data} = await agent.getAuthorFeed({actor: user, cursor: req.params.limit.toString()})
+        const {actor: user2, cursor: nextPage} = data;
+        const getProfile = await agent.getProfile({actor: user})
+
+        // debug: console.log(data.feed);
+        res.render('profile', {
+            user: getProfile,
+            posts: data.feed,
+            cursor: nextPage
+            
+        })
+
+
+     } catch (XRPCError) {
+    
+        console.log(XRPCError);
+    }
+});
 
 
 app.get('/notifications', async (req: Request, res: Response) => {
@@ -274,6 +312,39 @@ app.post('/repost',  async (req: Request, res: Response) => {
     res.redirect('/home')   
 });
 
+
+app.post('/reply',  async (req: Request, res: Response) => {
+
+    console.log(req.body);
+    console.log(req.files);
+    const rt = new RichText({
+      text: req.body.bodytext2,
+    });
+    await rt.detectFacets(agent);
+
+    
+    
+    await agent.post({
+      "$type": "app.bsky.feed.post",
+      text: rt.text,
+      reply: {
+        root: {
+            uri: req.body.uri3,
+            cid: req.body.cid3,
+        },
+        parent: {
+            uri: req.body.uri3,
+            cid: req.body.cid3
+        }
+      },
+      facets: rt.facets,
+      createdAt: new Date().toISOString()
+      
+    })
+    
+
+    res.redirect('/home')
+});
 
 
 app.listen(port, ip, () => {

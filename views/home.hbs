@@ -63,6 +63,15 @@
         <input name="cid2" type="hidden" value="{{this.post.cid}}" />
         <button type="submit"> Repost </button>
     </form>
+
+
+    <form action="/reply" method="post" name="uri"> 
+        <input name="uri3" type="hidden" value="{{this.post.uri}}" />
+        <input name="cid3" type="hidden" value="{{this.post.cid}}" />
+        <label>Reply</label>
+        <input class="i" id="status" maxlength="300" name="bodytext2" type="text" /><br />       
+        <button type="submit"> Reply </button>
+    </form>
   {{/if}}
 
     

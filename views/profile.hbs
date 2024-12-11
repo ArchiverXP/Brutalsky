@@ -40,7 +40,7 @@
   {{/each}}  {{/if}}
 
     {{#if @last}}
-        <form class="notthefirst" action="/page/{{this.post.indexedAt}}" method="get"> 
+        <form class="notthefirst" action="/profile/{{this.post.author.handle}}/{{this.post.indexedAt}}" method="get"> 
         <button type="submit">Next Page</button>
         </form>
     {{/if}}
