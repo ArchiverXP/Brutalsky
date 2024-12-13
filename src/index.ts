@@ -9,8 +9,8 @@ import cookieParser from 'cookie-parser';
 import cookieSession from 'cookie-session'
 import {fileURLToPath} from 'url';
 import { dirname } from 'path';
-//import multer from 'multer'
-//import sharp from 'sharp'
+import multer from 'multer'
+import sharp from 'sharp'
 import { readFile, writeFile } from 'node:fs/promises';
 import { Blob } from 'buffer';
 let savedSessionData: AtpSessionData;
@@ -49,8 +49,8 @@ app.engine('hbs', engine({
 }));
 
 
-//const storage = multer.memoryStorage()
-//const upload = multer({ storage: storage })
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage })
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
@@ -245,6 +245,21 @@ app.get('/notifications', async (req: Request, res: Response) => {
 });
 
 
+app.post('/follow', async (req: Request, res: Response) => {
+    let did = req.body.did;
+    const { uri } = await agent.follow(did)
+
+    res.redirect('back');
+});
+
+
+app.post('/unfollow', async (req: Request, res: Response) => {
+    let did = req.body.did2;
+    const data = await agent.deleteFollow(did)
+
+    res.redirect('back');
+});
+
 
 app.get('/page/:limit', async (req: Request, res: Response) => {
     const {username, password} = req.cookies;
@@ -278,6 +293,31 @@ app.get('/page/:limit', async (req: Request, res: Response) => {
 let file2uh = "a";
 
 
+app.post('/sendstatusWithImage', upload.single("embed"), express.urlencoded({extended: true}), async (req, res) => {
+    console.log(req.body);
+    console.log(req.files);
+    const rt = new RichText({
+      text: req.body.bodytext,
+    });
+    await rt.detectFacets(agent);
+
+    const {data} = await agent.uploadBlob(req.file.buffer as any, {encoding:'image/png'});
+    await agent.post({
+      "$type": "app.bsky.feed.post",
+      text: rt.text,
+      embed: {
+        $type:'app.bsky.embed.images',
+        images:[{
+            image: data.blob,
+            alt: req.body.alt
+        }]
+      },
+      facets: rt.facets,
+      createdAt: new Date().toISOString()
+    })
+    res.redirect("/home")
+})
+
 app.post('/sendstatus', express.urlencoded({extended: true}), async (req, res) => {
     console.log(req.body);
     console.log(req.files);
@@ -296,20 +336,20 @@ app.post('/sendstatus', express.urlencoded({extended: true}), async (req, res) =
       
     })
     
-    res.redirect('/home')
+    res.redirect('back');
 })
 
 app.post('/like',  async (req: Request, res: Response) => {
 
     await agent.like(req.body.uri, req.body.cid);
 
-    res.redirect('/home')
+    res.redirect('back');
 });
 
 app.post('/repost',  async (req: Request, res: Response) => {
     await agent.repost(req.body.uri2, req.body.cid2)
 
-    res.redirect('/home')   
+    res.redirect('back'); 
 });
 
 
@@ -343,7 +383,7 @@ app.post('/reply',  async (req: Request, res: Response) => {
     })
     
 
-    res.redirect('/home')
+    res.redirect('back');
 });
 
 

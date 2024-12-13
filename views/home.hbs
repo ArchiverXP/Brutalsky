@@ -15,6 +15,16 @@
         <input class="i" id="status" maxlength="300" name="bodytext" type="text" /><br />
         <button class="b" id="button"  name="mobile_text_content" type="submit"> Send </button>     
     </form> 
+
+    <form action="/sendstatusWithImage" method="post"  enctype="multipart/form-data">
+        <label> Have an image? Send it here! </label>
+        <input class="im" id="status" maxlength="300" name="bodytext" type="text">
+        <input type="file" name="embed" id="sembed">
+        <label>Alt text:</label>
+        <input class="alt" name="alt" type="text">    
+        <button class="b" id="button"  name="mobile_text_content" type="submit"> Send </button>   
+
+    </form>
 </div>
 
 
@@ -63,7 +73,6 @@
         <input name="cid2" type="hidden" value="{{this.post.cid}}" />
         <button type="submit"> Repost </button>
     </form>
-
 
     <form action="/reply" method="post" name="uri"> 
         <input name="uri3" type="hidden" value="{{this.post.uri}}" />
