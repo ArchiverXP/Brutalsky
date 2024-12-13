@@ -8,7 +8,35 @@
     
         <a href="/profile/{{this.handle}}">{{this.handle}}</a>
 
-        <p> Biography: {{this.description}}</p>
+        {{#isEqual this.viewer.following mainProfile}}
+              <form action="/follow" method="post"> 
+
+                <input name="did" type="hidden" value="{{this.did}}" />
+                <button type="submit"> Follow </button>           
+
+            </form>
+        {{/isEqual}}
+        
+        {{#isNotEqual this.viewer.following mainProfile }}
+            {{#containsUser mainProfile this.viewer.following }}
+ 
+                <form action="/unfollow" method="post"> 
+
+                    <input name="did" type="hidden" value="{{this.did}}" />
+                    <button type="submit"> Unfollow </button>           
+
+                </form>   
+            {{/containsUser}}
+
+        {{/isNotEqual}}
+
+
+
+        
+
+        
+        <br> </br>
+        <small> Biography: {{this.description}}</small>
         {{/if}}
     
     {{/each}}
@@ -27,6 +55,15 @@
         <p> Reposted by: {{this.reason.by.handle}} </p>
         
     {{/if}}
+
+
+    {{#if this.reply}}
+    
+         <p> Reply to: {{this.reply.parent.author.handle}} </p>
+        
+    {{/if}} 
+    
+
     <img src="{{this.post.author.avatar}}" height="50px" width="50px"/>
     
     <a href="/profile/{{this.post.author.handle}}">{{this.post.author.handle}}</a>

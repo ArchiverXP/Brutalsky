@@ -1,8 +1,8 @@
 import { AtpAgent, AtpSessionEvent, AtpSessionData, RichText, AppBskyRichtextFacet, Agent, AppBskyFeedGetTimeline } from '@atproto/api'
-import { engine } from 'express-handlebars';
+import { engine, ExpressHandlebars  } from 'express-handlebars';
 import express, { Express, NextFunction, request, response } from 'express';
 import { Router, Request, Response } from "express";
-
+import Handlebars from 'handlebars';
 import path from 'path';
 import session from 'express-session'
 import cookieParser from 'cookie-parser';
@@ -27,7 +27,7 @@ app.use(cookieParser());
 app.use(cookieSession({
     name: 'session',
     keys: ['FUN', "YOU"],
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: 128 * 60 * 60 * 1000,
     secure: false
 }));
 
@@ -38,13 +38,24 @@ export const agent = new AtpAgent({
 })
 
 
+
 app.engine('hbs', engine({
     extname: ".hbs",
     defaultLayout: false,
+    handlebars: Handlebars,
     helpers: {
         isEqual: function (value, value2, options){
             return (value == value2) ? options.fn(this) : options.inverse(this);
+        },
+        isNotEqual: function (value, value2, options){
+            return (value != value2) ? options.fn(this) : options.inverse(this);
+        },
+        containsUser: function(value, value2, options){
+            value = Handlebars.escapeExpression(value);
+            value2 = Handlebars.escapeExpression(value2);
+            return (value2.indexOf(value) > -1) ? options.fn(this) : options.inverse(this);
         }
+
     }
 }));
 
@@ -132,6 +143,7 @@ app.post("/login", async (req: Request, res: Response) => {
         res.cookie("username", username, { httpOnly: true });
         res.cookie("password", password, { httpOnly: true });
         
+        
 
         res.redirect("/home");
     } catch (error) {
@@ -186,13 +198,16 @@ app.get("/home", express.urlencoded({ extended: true }), async (req, res) => {
 
 app.get('/profile/:user', async (req: Request, res: Response) => {
         const user = req.params['user']
+        const mainuser = req.cookies.username;
         console.log(req.params)
         const getProfile = await agent.getProfile({actor: user})
+
+        const MainProf = await agent.did
         const {data} = await agent.getAuthorFeed({actor: user})
-        
         res.render('profile', {
             user: getProfile,
-            posts: data.feed
+            posts: data.feed,
+            mainProfile: MainProf
         })
 })
 
@@ -249,7 +264,7 @@ app.post('/follow', async (req: Request, res: Response) => {
     let did = req.body.did;
     const { uri } = await agent.follow(did)
 
-    res.redirect('back');
+    res.send(`<meta http-equiv="Refresh" content="0; URL=/"/>`);
 });
 
 
@@ -257,7 +272,7 @@ app.post('/unfollow', async (req: Request, res: Response) => {
     let did = req.body.did2;
     const data = await agent.deleteFollow(did)
 
-    res.redirect('back');
+    res.send(`<meta http-equiv="Refresh" content="0; URL=/"/>`);
 });
 
 
@@ -315,7 +330,7 @@ app.post('/sendstatusWithImage', upload.single("embed"), express.urlencoded({ext
       facets: rt.facets,
       createdAt: new Date().toISOString()
     })
-    res.redirect("/home")
+    res.send(`<meta http-equiv="Refresh" content="0; URL=/"/>`);
 })
 
 app.post('/sendstatus', express.urlencoded({extended: true}), async (req, res) => {
@@ -336,20 +351,21 @@ app.post('/sendstatus', express.urlencoded({extended: true}), async (req, res) =
       
     })
     
-    res.redirect('back');
+    res.send(`<meta http-equiv="Refresh" content="0; URL=/"/>`);
 })
 
 app.post('/like',  async (req: Request, res: Response) => {
 
     await agent.like(req.body.uri, req.body.cid);
 
-    res.redirect('back');
+    const user = req.params['user']
+    res.send(`<meta http-equiv="Refresh" content="0; URL=/"/>`);
 });
 
 app.post('/repost',  async (req: Request, res: Response) => {
     await agent.repost(req.body.uri2, req.body.cid2)
-
-    res.redirect('back'); 
+    const user = req.params['user']
+    res.send(`<meta http-equiv="Refresh" content="0; URL=/"/>`);
 });
 
 
@@ -383,7 +399,7 @@ app.post('/reply',  async (req: Request, res: Response) => {
     })
     
 
-    res.redirect('back');
+    res.send(`<meta http-equiv="Refresh" content="0; URL=/"/>`);
 });
 
 
