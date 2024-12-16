@@ -269,9 +269,12 @@ app.post('/follow', async (req: Request, res: Response) => {
 
 
 app.post('/unfollow', async (req: Request, res: Response) => {
-    let did = req.body.did2;
-    const data = await agent.deleteFollow(did)
 
+    let did = req.body.did;
+    const { uri } = await agent.follow(did)
+
+    const data = await agent.deleteFollow(uri)
+    console.log(did);
     res.send(`<meta http-equiv="Refresh" content="0; URL=/"/>`);
 });
 
