@@ -1,0 +1,105 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/>
+<head>
+    <link rel="stylesheet" href="/main.css">
+</head>
+
+<div class="notifs">
+    <form action="/notifications" method="get">
+        <button type="submit"> Notifications </button>
+    </form>
+</div>
+
+<div class="mobileheader"> 
+    <form action="/sendstatus" method="post">
+        <label>How are you doing?</label>
+        <input class="i" id="status" maxlength="300" name="bodytext" type="text" /><br />
+        <button class="b" id="button"  name="mobile_text_content" type="submit"> Send </button>     
+    </form> 
+
+    <form action="/sendstatusWithImage" method="post"  enctype="multipart/form-data">
+        <label> Have an image? Send it here! </label>
+        <input class="im" id="status" maxlength="300" name="bodytext" type="text">
+        <input type="file" name="embed" id="sembed">
+        <label>Alt text:</label>
+        <input class="alt" name="alt" type="text">    
+        <button class="b" id="button"  name="mobile_text_content" type="submit"> Send </button>   
+
+    </form>
+</div>
+
+
+
+<div class="feed">
+    {{#each feed}}
+    <br> </br>
+    {{#if this.reason}}
+    
+        <p> Reposted by: {{this.reason.by.handle}} </p>
+        
+    {{/if}}
+
+    {{#if this.reply}}
+    
+         <p> Reply to: {{this.reply.parent.author.handle}} </p>
+        
+    {{/if}}
+
+
+
+
+    
+
+
+    <img src="{{this.post.author.avatar}}" height="50px" width="50px"/>
+    
+    <a href="/profile/{{this.post.author.handle}}">{{this.post.author.handle}}</a>
+    
+	<p> {{this.post.record.text}} </p>
+        {{#if this.post.record.labels}}
+            <p> WARNING: graphic/adult content </p>
+        {{else}}
+		{{#if this.post.embed}}
+            {{#each this.post.embed.images}}
+                
+              <div class="embed" style="width: 150px; height: 150px">
+                <img src="{{this.thumb}}" alt="{{this.alt}}" width="100%" height="100%">
+            </div>
+  {{/each}}  {{/if}} {{/if}}
+  
+  <p> {{this.post.likeCount}} likes </p>
+  <p> {{this.post.replyCount}} replies </p>
+  <p> {{this.post.repostCount}} reposts </p>
+
+  {{#if this.post.uri}}
+    <form action="/like" method="post" name="uri">
+        <input name="uri" type="hidden" value="{{this.post.uri}}" />
+        <input name="cid" type="hidden" value="{{this.post.cid}}" /> 
+        <button type="submit"> Like </button>
+    </form>
+
+    <form action="/repost" method="post" name="uri"> 
+        <input name="uri2" type="hidden" value="{{this.post.uri}}" />
+        <input name="cid2" type="hidden" value="{{this.post.cid}}" />
+        <button type="submit"> Repost </button>
+    </form>
+
+    <form action="/reply" method="post" name="uri"> 
+        <input name="uri3" type="hidden" value="{{this.post.uri}}" />
+        <input name="cid3" type="hidden" value="{{this.post.cid}}" />
+        <label>Reply</label>
+        <input class="i" id="status" maxlength="300" name="bodytext2" type="text" /><br />       
+        <button type="submit"> Reply </button>
+    </form>
+  {{/if}}
+
+    
+    
+    {{#if @last}}
+        <form class="notthefirst" action="/page/{{this.post.indexedAt}}" method="get"> 
+        <button type="submit">Next Page</button>
+        </form>
+    {{/if}}
+  
+    {{/each}}
+
+</div>
