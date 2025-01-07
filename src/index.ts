@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { AtpAgent, AtpSessionEvent, AtpSessionData, RichText, AppBskyRichtextFacet, Agent, AppBskyFeedGetTimeline } from '@atproto/api'
 import { engine, ExpressHandlebars  } from 'express-handlebars';
 import express, { Express, NextFunction, request, response } from 'express';
@@ -54,6 +55,17 @@ app.engine('hbs', engine({
             value = Handlebars.escapeExpression(value);
             value2 = Handlebars.escapeExpression(value2);
             return (value2.indexOf(value) > -1) ? options.fn(this) : options.inverse(this);
+        },
+        loadImages: function(value, options){
+            if(process.env.SHOW_IMAGES === "off"){
+                return '';
+            }
+            else{
+                //do nothing
+            }
+
+            return process.env.SHOW_IMAGES;
+            
         }
 
     }

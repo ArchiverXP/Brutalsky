@@ -4,8 +4,9 @@
     {{#each user}}
         {{#if @first }}
                     <br> </br>
+        {{#if (loadImages)}}
         <img src="{{this.avatar}}" height="50px" width="50px"/> 
-    
+        {{/if}}
         <a href="/profile/{{this.handle}}">{{this.handle}}</a>
 
         {{#isEqual this.viewer.following mainProfile}}
@@ -63,22 +64,26 @@
         
     {{/if}} 
     
-
-    <img src="{{this.post.author.avatar}}" height="50px" width="50px"/>
+    {{#if (loadImages)}}
+        <img src="{{this.post.author.avatar}}" height="50px" width="50px"/>
+    {{/if}}
     
     <a href="/profile/{{this.post.author.handle}}">{{this.post.author.handle}}</a>
 
 	<p> {{this.post.record.text}} </p>
+    
         {{#if this.post.record.labels}}
             <p> WARNING: graphic/adult content </p>
         {{else}}
+        
 		{{#if this.post.embed}}
+            {{#if (loadImages)}}
             {{#each this.post.embed.images}}
                 
               <div class="embed" style="width: 150px; height: 150px">
                 <img src="{{this.thumb}}" alt="{{this.alt}}" width="100%" height="100%">
             </div>
-  {{/each}}  {{/if}} {{/if}}
+  {{/each}} {{/if}} {{/if}} {{/if}}
 
     {{#if @last}}
         <form class="notthefirst" action="/profile/{{this.post.author.handle}}/{{this.post.indexedAt}}" method="get"> 

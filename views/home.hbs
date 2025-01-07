@@ -15,7 +15,7 @@
         <input class="i" id="status" maxlength="300" name="bodytext" type="text" /><br />
         <button class="b" id="button"  name="mobile_text_content" type="submit"> Send </button>     
     </form> 
-
+    {{#if (loadImages)}}
     <form action="/sendstatusWithImage" method="post"  enctype="multipart/form-data">
         <label> Have an image? Send it here! </label>
         <input class="im" id="status" maxlength="300" name="bodytext" type="text">
@@ -25,6 +25,7 @@
         <button class="b" id="button"  name="mobile_text_content" type="submit"> Send </button>   
 
     </form>
+    {{/if}}
 </div>
 
 
@@ -49,8 +50,10 @@
 
     
 
+    {{#if (loadImages)}}
 
-    <img src="{{this.post.author.avatar}}" height="50px" width="50px"/>
+        <img src="{{this.post.author.avatar}}" height="50px" width="50px"/>
+    {{/if}}
     
     <a href="/profile/{{this.post.author.handle}}">{{this.post.author.handle}}</a>
     
@@ -60,10 +63,11 @@
         {{else}}
 		{{#if this.post.embed}}
             {{#each this.post.embed.images}}
-                
+                {{#if (loadImages)}}
               <div class="embed" style="width: 150px; height: 150px">
                 <img src="{{this.thumb}}" alt="{{this.alt}}" width="100%" height="100%">
             </div>
+            {{/if}}
   {{/each}}  {{/if}} {{/if}}
   
   <p> {{this.post.likeCount}} likes </p>
