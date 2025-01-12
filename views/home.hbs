@@ -99,6 +99,9 @@
     
     
     {{#if @last}}
+        {{#if this.reason}}
+            <form class="notthefirst" action="/page/{{this.reason.indexedAt}}" method="get"> 
+        {{/if}}
         <form class="notthefirst" action="/page/{{this.post.indexedAt}}" method="get"> 
         <button type="submit">Next Page</button>
         </form>
