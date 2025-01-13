@@ -57,17 +57,27 @@
     
     <a href="/profile/{{this.post.author.handle}}">{{this.post.author.handle}}</a>
     
-	<p> {{this.post.record.text}} </p>
+
+
+    <p> {{this.post.record.text}} </p>
+
+
+
         {{#if this.post.record.labels}}
             <p> WARNING: graphic/adult content </p>
         {{else}}
 		{{#if this.post.embed}}
             {{#each this.post.embed.images}}
-                {{#if (loadImages)}}
+            {{#if (loadImages)}}
               <div class="embed" style="width: 150px; height: 150px">
                 <img src="{{this.thumb}}" alt="{{this.alt}}" width="100%" height="100%">
             </div>
+            {{else}}
+                {{#if this.alt includeZero=false}}
+                <p> Image Description: {{this.alt}} </p>
+                {{/if}}
             {{/if}}
+
   {{/each}}  {{/if}} {{/if}}
   
   <p> {{this.post.likeCount}} likes </p>
