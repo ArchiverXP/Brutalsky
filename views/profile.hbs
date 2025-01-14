@@ -72,6 +72,10 @@
 
 	<p> {{this.post.record.text}} </p>
     
+    {{#each this.post.record.facets}}
+        <a href="{{{detectLinks this}}}">{{{detectLinks this}}}</a>
+    {{/each}}    
+    
         {{#if this.post.record.labels}}
             <p> WARNING: graphic/adult content </p>
         {{else}}
