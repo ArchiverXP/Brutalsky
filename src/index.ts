@@ -66,6 +66,19 @@ app.engine('hbs', engine({
 
             return process.env.SHOW_IMAGES;
             
+        },
+
+        detectLinks: function(value){
+
+            let parseJason = JSON.stringify(value);
+            let arr = [];
+            let parsethething = JSON.parse(parseJason);
+            for(const key of parsethething.features){
+                
+                arr.push({uri2: key});
+                console.log(arr[0].uri2.uri);
+            }
+            return arr[0].uri2.uri;
         }
 
     }
