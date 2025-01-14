@@ -35,7 +35,15 @@ app.use(cookieSession({
 
 export const agent = new AtpAgent({
     service: 'https://bsky.social',
-    
+    persistSession(evt, sesh){
+
+        if(!sesh) {
+          writeFile('session.json', JSON.stringify(sesh));
+        }
+        savedSessionData = sesh;
+        writeFile('session.json', JSON.stringify(sesh));
+        
+      }
 })
 
 
@@ -103,10 +111,21 @@ console.log(__filename);
 app.get("/", async (req: Request, res: Response) => {
     const { username, password } = req.cookies
     if(username || password){
-        await agent.login({
-            identifier: username,
-            password: password
-        });
+
+        const sesh = await readFile('session.json', { encoding: 'utf-8' }).catch(() => null);
+
+        if(sesh){
+          console.log('Found saved session data. Resuming session...');
+          savedSessionData = JSON.parse(sesh);
+          await agent.resumeSession(savedSessionData)
+        }
+        else{
+            await agent.login({
+                identifier: username,
+                password: password
+            });
+        }
+        
         res.redirect('/home')
     }
     else{
@@ -159,11 +178,20 @@ app.post("/login", async (req: Request, res: Response) => {
     const sesh = req.cookies;
 
     try {
-        
-        await agent.login({
-            identifier: username,
-            password: password
-        });
+        const sesh = await readFile('session.json', { encoding: 'utf-8' }).catch(() => null);
+
+        if(sesh){
+          console.log('Found saved session data. Resuming session...');
+          savedSessionData = JSON.parse(sesh);
+          await agent.resumeSession(savedSessionData)
+        }
+        else{
+            await agent.login({
+                identifier: username,
+                password: password
+            });
+        }
+
 
         res.cookie("username", username, { httpOnly: true });
         res.cookie("password", password, { httpOnly: true });
