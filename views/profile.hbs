@@ -3,7 +3,7 @@
 <div class="profile">
     {{#each user}}
         {{#if @first }}
-                    <br> </br>
+                    
         {{#if (loadImages)}}
         <img src="{{this.avatar}}" height="50px" width="50px"/> 
         {{/if}}
@@ -36,7 +36,7 @@
         
 
         
-        <br> </br>
+        
         <small> Biography: {{this.description}}</small>
         {{/if}}
     
@@ -50,7 +50,7 @@
 
 <div class="feed">
     {{#each posts}}
-    <br> </br>
+    
     {{#if this.reason}}
     
         <p> Reposted by: {{this.reason.by.handle}} </p>
@@ -92,6 +92,34 @@
             {{/if}}
 
   {{/each}}  {{/if}} {{/if}}
+
+
+  <p> {{this.post.likeCount}} likes </p>
+  <p> {{this.post.replyCount}} replies </p>
+  <p> {{this.post.repostCount}} reposts </p>
+
+  {{#if this.post.uri}}
+    <form action="/like" method="post" name="uri">
+        <input name="uri" type="hidden" value="{{this.post.uri}}" />
+        <input name="cid" type="hidden" value="{{this.post.cid}}" /> 
+        <button type="submit"> Like </button>
+    </form>
+
+    <form action="/repost" method="post" name="uri"> 
+        <input name="uri2" type="hidden" value="{{this.post.uri}}" />
+        <input name="cid2" type="hidden" value="{{this.post.cid}}" />
+        <button type="submit"> Repost </button>
+    </form>
+
+    <form action="/reply" method="post" name="uri"> 
+        <input name="uri3" type="hidden" value="{{this.post.uri}}" />
+        <input name="cid3" type="hidden" value="{{this.post.cid}}" />
+        <label>Reply</label>
+        <input class="i" id="status" maxlength="300" name="bodytext2" type="text" /><br />       
+        <button type="submit"> Reply </button>
+    </form>
+  {{/if}}
+
 
     {{#if @last}}
         <form class="notthefirst" action="/profile/{{this.post.author.handle}}/{{this.post.indexedAt}}" method="get"> 
