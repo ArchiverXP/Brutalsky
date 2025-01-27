@@ -251,6 +251,16 @@ app.get("/home", express.urlencoded({ extended: true }), async (req, res) => {
 
 
 app.get('/profile/:user', async (req: Request, res: Response) => {
+        const sesh = await readFile('session.json', { encoding: 'utf-8' }).catch(() => null);
+        let val = 20;
+        if(sesh){
+            console.log('Found saved session data. Resuming session...');
+            savedSessionData = JSON.parse(sesh);
+            await agent.resumeSession(savedSessionData)
+        }
+        else{
+            res.redirect('/');
+        }
         const user = req.params['user']
         const mainuser = req.cookies.username;
         console.log(req.params)
@@ -267,7 +277,16 @@ app.get('/profile/:user', async (req: Request, res: Response) => {
 
 
 app.get('/profile/:user/:limit', async (req: Request, res: Response) => {
-    const {username, password} = req.cookies;
+    const sesh = await readFile('session.json', { encoding: 'utf-8' }).catch(() => null);
+    let val = 20;
+    if(sesh){
+        console.log('Found saved session data. Resuming session...');
+        savedSessionData = JSON.parse(sesh);
+        await agent.resumeSession(savedSessionData)
+    }
+    else{
+        res.redirect('/');
+    }
     
     console.log(req.params.limit)
 
@@ -275,12 +294,6 @@ app.get('/profile/:user/:limit', async (req: Request, res: Response) => {
     const user = req.params['user']
     console.log(req.params)
 
-    
-
-
-    if(!username || !password){
-        res.redirect('/');
-    }
     try {
         const {data} = await agent.getAuthorFeed({actor: user, cursor: req.params.limit.toString()})
         const {actor: user2, cursor: nextPage} = data;
@@ -334,16 +347,20 @@ app.post('/unfollow', async (req: Request, res: Response) => {
 
 
 app.get('/page/:limit', async (req: Request, res: Response) => {
-    const {username, password} = req.cookies;
+       const sesh = await readFile('session.json', { encoding: 'utf-8' }).catch(() => null);
+    let val = 20;
+    if(sesh){
+        console.log('Found saved session data. Resuming session...');
+        savedSessionData = JSON.parse(sesh);
+        await agent.resumeSession(savedSessionData)
+    }
+    else{
+        res.redirect('/');
+    }
     
     console.log(req.params.limit)
 
     
-    
-
-    if(!username || !password){
-        res.redirect('/');
-    }
     try {
         const {data} = await agent.getTimeline({limit: 20, cursor: req.params.limit.toString()});
         const { feed: postsArray, cursor: nextPage} = data;
