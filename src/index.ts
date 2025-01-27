@@ -109,27 +109,22 @@ console.log(__dirname);
 console.log(__filename);
 
 app.get("/", async (req: Request, res: Response) => {
-    const { username, password } = req.cookies
-    if(username || password){
+    const sesh = await readFile('session.json', { encoding: 'utf-8' }).catch(() => null);
+    if(sesh){
 
-        const sesh = await readFile('session.json', { encoding: 'utf-8' }).catch(() => null);
+        //const sesh = await readFile('session.json', { encoding: 'utf-8' }).catch(() => null);
 
-        if(sesh){
-          console.log('Found saved session data. Resuming session...');
-          savedSessionData = JSON.parse(sesh);
-          await agent.resumeSession(savedSessionData)
-        }
-        else{
-            await agent.login({
-                identifier: username,
-                password: password
-            });
-        }
+        console.log('Found saved session data. Resuming session...');
+        savedSessionData = JSON.parse(sesh);
+        await agent.resumeSession(savedSessionData)
         
         res.redirect('/home')
     }
     else{
-        console.log("no");
+        await agent.login({
+            identifier: req.body.username,
+            password: req.body.password
+        });
         res.render('main')
     }
     
@@ -216,11 +211,17 @@ async function getThread(uri){
 app.get("/home", express.urlencoded({ extended: true }), async (req, res) => {
 
     const {username, password} = req.cookies;
-
+    const sesh = await readFile('session.json', { encoding: 'utf-8' }).catch(() => null);
     let val = 20;
-    if(!username || !password){
+    if(sesh){
+        console.log('Found saved session data. Resuming session...');
+        savedSessionData = JSON.parse(sesh);
+        await agent.resumeSession(savedSessionData)
+    }
+    else{
         res.redirect('/');
     }
+
     try {
         
 
