@@ -121,10 +121,7 @@ app.get("/", async (req: Request, res: Response) => {
         res.redirect('/home')
     }
     else{
-        await agent.login({
-            identifier: req.body.username,
-            password: req.body.password
-        });
+
         res.render('main')
     }
     
